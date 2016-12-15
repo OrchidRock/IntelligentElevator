@@ -5,6 +5,9 @@ running of elevator.
 But this elevator can be very effcient
 by it's schedule policies.
 
+## Install
+./build.sh
+
 ## Date
 2016.10.23
 
