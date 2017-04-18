@@ -1,0 +1,10 @@
+# no bin
+bin/*
+#  no object file
+*.o
+src/*.o
+*.asc
+
+# no log
+log/*
+

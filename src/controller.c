@@ -90,6 +90,8 @@ main(int argc, char* argv[]){
 			dataset_index = 0;
 			fclose(fd_stream);
 		}
+	}else{
+		fprintf(stderr,"Warning: The dataset file argument hasn't set!");
 	}
 	my_sche_strategy = NORMAL;
 	if(argc > 2){ /* The schedule_strategy */
