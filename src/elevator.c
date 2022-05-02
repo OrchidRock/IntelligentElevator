@@ -92,7 +92,7 @@ main(int argc, char* argv[]){
 	}
 	shared_all_init(&my_shared, current_floor_number);
 	sem_init(&local_mutex, 0, 1);
-	sprintf(buf, "../log/elevator_%d.log", ele_number);
+	sprintf(buf, "./log/elevator_%d.log", ele_number);
 	if(is_moudle_test)
 		log_fd = stderr;
 	else{

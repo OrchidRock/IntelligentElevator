@@ -5,6 +5,27 @@ running of elevator.
 But this elevator can be very effcient
 by it's schedule policies.
 
+该模型与磁盘访问模型类似:可以将楼层比作磁道,
+电梯比作带buffer的磁头,人比作可以发送指令的数据
+指令就是申请从当前楼层移动到目标楼层,对于磁盘
+而言相当于在不同磁道间移动数据.总之,我们可以
+参考磁盘控制器的机制和调度策略,如FCFS,SSTF,SCAN,
+Look等.
+
+### Mechanism
+1. 统一调度
+2. 满足相应目标下的负载均衡
+3. 单方向任务:即每个电梯的任务队列中只包含同一方向的
+任务
+### Goal
+a. 最小化等待时间
+b. 防止饥饿,即等待时间存在上限
+b. 最大化吞吐量
+c. 最小化功耗
+
+### Policy
+
+
 ## Install
 ./build.sh
 
@@ -12,3 +33,4 @@ by it's schedule policies.
 2016.10.23
 ## Update
 2017.4.18
+2022.5.2

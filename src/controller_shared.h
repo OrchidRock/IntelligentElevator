@@ -1,5 +1,5 @@
 /*	schedule.h
- *	This is a module shedule elevator base on the each
+ *	This is a module which shedule elevator base on the each
  *	elevator's shared state and request queue.
  */
 
