@@ -47,14 +47,14 @@ schedule_t my_schedule;
 int is_accept_intime_reauest;/* */
 schedule_strategy_enum my_sche_strategy; /* */
 sem_t local_mutex;
-volatile int current_time;
+int current_time;
 int 
 main(int argc, char* argv[]){
 	int pid[ELEVATOR_NUMBER + 1];
 	int i;
 	//int startup_time;
 	//int current_time;
-	request_t dataset[DATASET_MAXLINE];
+	request_t data_set[DATASET_MAXLINE];
 	int human_count = 0 ;
 	int	dataset_count = 0;
 	int dataset_index  = -1;
@@ -74,16 +74,16 @@ main(int argc, char* argv[]){
 				tmp_ptr = buf;
 				if((delim = strstr(tmp_ptr, " ")) != NULL){
 					*delim = '\0';
-					dataset[dataset_count].start_time = atoi(tmp_ptr);
+					data_set[dataset_count].start_time = atoi(tmp_ptr);
 					tmp_ptr = delim + 1;
 				} 
 				if((delim = strstr(tmp_ptr, " ")) != NULL){         	
             		*delim = '\0';
-            		dataset[dataset_count].source_floor = atoi(tmp_ptr);
+            		data_set[dataset_count].source_floor = atoi(tmp_ptr);
             		tmp_ptr = delim + 1;
             	}                                              
-            	dataset[dataset_count].target_floor = atoi(tmp_ptr);
-				dataset[dataset_count].is_preprocessing = 0;	
+            	data_set[dataset_count].target_floor = atoi(tmp_ptr);
+				data_set[dataset_count].is_preprocessing = 0;	
 				dataset_count = (dataset_count + 1) % DATASET_MAXLINE;
 			}
 			is_accept_intime_reauest = 0;
@@ -162,9 +162,14 @@ main(int argc, char* argv[]){
 			sprintf(args[0], "elevator");
 			dup2(pm[i][0], STDIN_FILENO);/* Redirect stdin to pipe read */
 			close(pm[i][1]); /* Close write*/
-			if(execlp("./elevator",argv[0],args[1],args[2],args[3],args[4],args[5],args[6],NULL) < 0){
-				fprintf(stderr, "execve error %s\n",
-						strerror(errno));
+			if(execlp("/usr/bin/elevator",argv[0],args[1],args[2],args[3],args[4],args[5],args[6],NULL) < 0){
+				//fprintf(stderr, "/usr/bin/elevator: %s try ./elevator\n", strerror(errno));
+
+			    if(execlp("./elevator",argv[0],args[1],args[2],args[3],args[4],args[5],args[6],NULL) < 0){
+                    
+				    fprintf(stderr, "./elevator: %s\n", strerror(errno));
+                }
+                
 			}
 			exit(EXIT_FAILURE); 
 		}else /* controller process */
@@ -188,13 +193,15 @@ main(int argc, char* argv[]){
 
 	current_time = 0;
 	printf("dataset_count= %d\n", dataset_count);
-	/* FSM start running */
+	
+    request_t* req_ptr;
+	
+    /* FSM start running */
 	while(1){
 		/* check data-set */
 		if(dataset_index >= 0){
-			request_t* req_ptr;
 			while(dataset_index < dataset_count){
-				req_ptr = &(dataset[dataset_index]);
+				req_ptr = &(data_set[dataset_index]);
 				if(req_ptr->start_time != current_time)
 					break;
 				else{
@@ -438,16 +445,15 @@ print_dynamic_state_table(){
 		sleep(3);
 	}
 }
-void                                                                                                                                                   
-insert_queue(request_t* req_ptr, int current_time){	
+void insert_queue(request_t* req_ptr, int current_time){	
  	int dir = 0;
  	if(req_ptr->source_floor < req_ptr->target_floor)
- 		dir = 1;
+ 		dir = 1; // Up
  	else if(req_ptr->source_floor > req_ptr->target_floor)
- 		dir = -1;
+ 		dir = -1; // Down
  	else{
  		fprintf(stderr, "invaild data in dataset time: %d\n", req_ptr->start_time);
- 		return; /* error */
+ 		return; /* ignore */
  	}
  	//printf("dir = %d\n", dir);
  	if(my_sche_strategy != NORMAL && (req_ptr->target_floor == 1
@@ -461,7 +467,7 @@ insert_queue(request_t* req_ptr, int current_time){
  											req_ptr->start_time,
  											req_ptr->source_floor,
  											req_ptr->target_floor);*/
- }                                                                                     
+}                                                                                     
 
 void
 care_multi_request_queue(int current_time){
@@ -476,7 +482,8 @@ care_multi_request_queue(int current_time){
 	
 
 	//printf("Care :%d s\n", current_time);
-	for(int i = 0; i < 3; i++){
+	
+    for(int i = 0; i < 3; i++){
 		sem_wait(&local_mutex);
 		level_rq = multi_request_queue_get_pq(&my_multi_rq, i);
 		if(level_rq == NULL) {
@@ -501,12 +508,14 @@ care_multi_request_queue(int current_time){
 			else{
 				int n = tmp_request->is_preprocessing;
             	(care_requests[n][care_requests_each_elevator[n]]).req_ptr = tmp_request;
-            	care_requests_each_elevator[n] ++;
-				if(res == 0){  /* preprocessing */
+            	care_requests_each_elevator[n] = (care_requests_each_elevator[n]+1) % MAX_HUMAN_EACH_ELE;
+				
+                if(res == 0){  /* preprocessing */
 					//send_human_to_elevator(tmp_request,1);
             		tmp_request->is_preprocessing = 1;
 					priority_queue_next(level_rq);
 				}else{ /* Finished */
+
 					//send_human_to_elevator(tmp_request, 0);
             		tmp_request->is_preprocessing = 0;
 					priority_queue_remove(level_rq, 0);
@@ -521,6 +530,7 @@ care_multi_request_queue(int current_time){
 
 	send_human_to_elevator(care_requests_each_elevator, care_requests);
 }
+
 void
 send_human_to_elevator(int* care_requests_each_elevator,
 						request_ptr_t care_requests[][MAX_HUMAN_EACH_ELE]){

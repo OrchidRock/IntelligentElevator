@@ -26,8 +26,13 @@ c. 最小化功耗
 ### Policy
 
 
-## Install
-./build.sh
+## Compiler&Install
+make
+make install
+
+## Run
+./controller ./dataset/Hw3_data1.txt
+
 
 ## Date
 2016.10.23

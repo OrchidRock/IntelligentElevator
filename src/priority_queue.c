@@ -42,6 +42,8 @@ priority_queue_value_compare(priority_queue_t* my_priority_queue, void* a, void*
 	int b_key_value = *((int*)b + prio_word_index);
 	int res;
 	if(a_key_value == b_key_value){
+
+        //printf("a_key_value: %d  b_key_value: %d dir= %d is_skip= %d\n", a_key_value,b_key_value,dir,is_skip);
 		if(is_skip || my_priority_queue->second_priority_word_index < 0)
 			res = 0;
 		else{
@@ -49,6 +51,7 @@ priority_queue_value_compare(priority_queue_t* my_priority_queue, void* a, void*
 			res = priority_queue_value_compare(my_priority_queue, a, b, 
 							my_priority_queue->second_priority_word_index,
 							my_priority_queue->directive_second);
+            is_skip = 0;
 		}
 	}
 	else if(JUDGE_PF(a_key_value, b_key_value))
@@ -64,7 +67,7 @@ priority_queue_init(priority_queue_t* my_priority_queue, int is_mt_safed,
 	if(my_priority_queue == NULL) return -1;
 	node_t * tmp_node =(node_t *)malloc(sizeof(node_t));
 	if(tmp_node == NULL)	
-		return 1; 
+		return -1; 
 	tmp_node->value = NULL; /* Tag this is a sentry node */
 	tmp_node->next = NULL;
 	my_priority_queue->tail = tmp_node;
@@ -124,7 +127,7 @@ priority_queue_insert(priority_queue_t* my_priority_queue, void* new_value){
 		tmp_node->value = new_value;
 		tmp_node->next = tail_node->next;
 		tail_node->next = tmp_node;
-		tail_node = tail_node->next;
+	    //tail_node = tail_node->next;
 	}
 	/* Unlocked*/
 	V(my_priority_queue->mutex_ptr);
@@ -182,7 +185,6 @@ priority_queue_move_tail(priority_queue_t* my_priority_queue){
 void 
 priority_queue_free(priority_queue_t* my_priority_queue, int is_free_value){
 	if(my_priority_queue == NULL) return;
-	P(my_priority_queue->mutex_ptr);
 	node_t * tmp_node = my_priority_queue->tail->next;
 	while(tmp_node != NULL){
 		node_t* tmp_node2 = tmp_node->next;
@@ -193,7 +195,6 @@ priority_queue_free(priority_queue_t* my_priority_queue, int is_free_value){
 	if(my_priority_queue->mutex_ptr != NULL)
 		free(my_priority_queue->mutex_ptr);
 	free(my_priority_queue->tail);
-	V(my_priority_queue->mutex_ptr);
 }
 int 
 priority_queue_is_empty(priority_queue_t* my_priority_queue){

@@ -46,9 +46,9 @@ multi_request_queue_init(multi_request_queue_t* my_mrq,
 		priority_queue_init(my_mrq->third_level_rq, 1, 1,2, 0, -1, 1); 
 	}else{ /* NORMAL */
 		/* UP */
-		priority_queue_init(my_mrq->second_level_rq, 1, 1,0, -1, 1, -1);
+		priority_queue_init(my_mrq->second_level_rq, 1, 1,1, 0, 1, 1);
 		/* DOWN */
-		priority_queue_init(my_mrq->third_level_rq, 1, 1,0, -1, 1, -1);
+		priority_queue_init(my_mrq->third_level_rq, 1, 1,1, 0, -1, 1);
 		my_mrq->first_level_rq = NULL;
 	}
 }

@@ -2,7 +2,7 @@
 
 CC = gcc
 LIBS = -lpthread
-CFLAGS = -O1 -Wall
+CFLAGS =  -g -Wall
 SRC_DIR = ./src
 BIN_DIR = ./bin
 LOG_DIR = ./log
